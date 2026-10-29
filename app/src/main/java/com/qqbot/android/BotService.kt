@@ -215,6 +215,8 @@ class BotService : Service() {
     private fun extractTar(ins: java.io.InputStream, dstDir: File) {
         val buf = ByteArray(512)
         var longName: String? = null
+        var count = 0L
+        var lastOffset = 0L
 
         fun readBlock(): Boolean {
             var read = 0
@@ -247,6 +249,16 @@ class BotService : Service() {
             var name = if (prefix.isNotEmpty()) "$prefix/$name0" else name0
             if (longName != null) { name = longName!!; longName = null }
 
+            count++
+            // 诊断：异常路径或每 2000 条打印
+            if (name.contains(":") || name.length > 250 || name.isEmpty() ||
+                !name.startsWith(".") && !name.startsWith("/") ||
+                name.contains("\u0000")) {
+                log("[TAR_ANOMALY] #$count type=$type size=$size name=${name.take(120)}")
+            } else if (count % 2000L == 0L) {
+                log("[TAR] #$count ${name.take(80)}")
+            }
+
             val out = File(dstDir, name)
 
             when (type) {
@@ -255,6 +267,9 @@ class BotService : Service() {
                     var r = 0
                     while (r < sb.size) { val n = ins.read(sb, r, sb.size - r); if (n <= 0) break; r += n }
                     longName = String(sb, Charsets.UTF_8).trimEnd('\u0000')
+                    val lpad = (512 - (size % 512)) % 512
+                    if (lpad > 0) skipData(lpad)
+                    lastOffset += 512 + size + lpad
                     continue
                 }
                 '5' -> { out.mkdirs(); skipData(size) }
@@ -315,7 +330,9 @@ class BotService : Service() {
             // 对齐到 512
             val pad = (512 - (size % 512)) % 512
             if (pad > 0) skipData(pad)
+            lastOffset += 512 + size + pad
         }
+        log("[TAR_DONE] 共 $count 条，数据流偏移 $lastOffset")
     }
 
     private fun skipData(size: Long) {
