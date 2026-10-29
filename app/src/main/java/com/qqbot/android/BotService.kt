@@ -359,6 +359,24 @@ class BotService : Service() {
         }
     }
 
+    private fun dumpDiagnostics(tag: String, proot: String, loader: String, rootfs: String, tmp: String, shm: String) {
+        log("[$tag] ===== DIAG =====")
+        log("[$tag] SELinux=${try { File("/proc/self/attr/current").readText().trim() } catch (e: Exception) { "?" }}")
+        log("[$tag] LD_LIBRARY_PATH=${System.getenv("LD_LIBRARY_PATH") ?: "null"}")
+        log("[$tag] TMPDIR=${System.getenv("TMPDIR") ?: "null"}")
+        log("[$tag] proot=${proot}")
+        log("[$tag] proot.exists=${File(proot).exists()} proot.canExec=${File(proot).canExecute()}")
+        log("[$tag] loader=${loader}")
+        log("[$tag] loader.exists=${File(loader).exists()}")
+        log("[$tag] rootfs=${rootfs} isDir=${File(rootfs).isDirectory}")
+        log("[$tag] tmp=${tmp} exists=${File(tmp).exists()}")
+        log("[$tag] shm=${shm} exists=${File(shm).exists()}")
+        log("[$tag] rootfs/bin/bash exists=${File("$rootfs/bin/bash").exists()}")
+        log("[$tag] rootfs/opt/QQ/qq exists=${File("$rootfs/opt/QQ/qq").exists()}")
+        log("[$tag] rootfs/root/napcat_env/launcher.sh exists=${File("$rootfs/root/napcat_env/launcher.sh").exists()}")
+        log("[$tag] =================")
+    }
+
     private fun launchProot(cmdInside: String, tag: String): Process? {
         val proot = FileHelper.prootPath(this)
         val loader = FileHelper.prootLoaderPath(this)
@@ -379,6 +397,8 @@ class BotService : Service() {
             "LANG=C.UTF-8",
             "/bin/bash", "-c", cmdInside
         )
+
+        dumpDiagnostics(tag, proot, loader, rootfs, tmp, shm)
 
         // 写启动脚本，用 /system/bin/sh 执行（绕过 ProcessBuilder 环境差异）
         val script = File(filesDir, "run_$tag.sh")
