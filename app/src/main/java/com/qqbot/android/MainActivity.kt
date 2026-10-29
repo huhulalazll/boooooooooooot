@@ -117,14 +117,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val REQ_PICK_ROOTFS = 1001
+
     private fun bindStart(root: View) {
         val etKey = root.findViewById<android.widget.EditText>(R.id.etApiKey)
         val etQq = root.findViewById<android.widget.EditText>(R.id.etQq)
         val btnStart = root.findViewById<android.widget.Button>(R.id.btnStart)
         val btnStop = root.findViewById<android.widget.Button>(R.id.btnStop)
+        val btnPick = root.findViewById<android.widget.Button>(R.id.btnPickRootfs)
+        val tvRootfs = root.findViewById<android.widget.TextView>(R.id.tvRootfsStatus)
 
         etKey?.setText(ConfigStore.loadApiKey(this))
         etQq?.setText(ConfigStore.loadQq(this))
+
+        updateRootfsStatus(tvRootfs)
+
+        btnPick?.setOnClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "*/*"
+            }
+            startActivityForResult(intent, REQ_PICK_ROOTFS)
+        }
 
         btnStart?.setOnClickListener {
             val k = etKey?.text?.toString()?.trim() ?: ""
@@ -133,21 +147,93 @@ class MainActivity : AppCompatActivity() {
                 android.widget.Toast.makeText(this, "请填写 API Key", android.widget.Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            val savedPath = ConfigStore.loadRootfsPath(this)
+            if (savedPath.isBlank() && !FileHelper.rootfsReady(this)) {
+                android.widget.Toast.makeText(this, "请先选择 rootfs 文件", android.widget.Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             ConfigStore.saveApiKey(this, k)
             ConfigStore.saveQq(this, q)
 
+            showProgress(true)
             val i = Intent(this, BotService::class.java)
             i.action = BotService.ACTION_START
             ContextCompat.startForegroundService(this, i)
-            android.widget.Toast.makeText(this, "启动中…请到主页查看状态", android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(this, "启动中…请稍候", android.widget.Toast.LENGTH_SHORT).show()
         }
 
         btnStop?.setOnClickListener {
             val i = Intent(this, BotService::class.java)
             i.action = BotService.ACTION_STOP
             startService(i)
+            showProgress(false)
             android.widget.Toast.makeText(this, "已停止", android.widget.Toast.LENGTH_SHORT).show()
         }
+
+        // 轮询更新进度
+        startProgressPolling(root)
+    }
+
+    private fun updateRootfsStatus(tv: android.widget.TextView?) {
+        val p = ConfigStore.loadRootfsPath(this)
+        val ready = FileHelper.rootfsReady(this)
+        tv?.text = when {
+            ready -> "✓ 已解压可用"
+            p.isNotBlank() -> "已选择：${java.io.File(p).name}"
+            else -> "未选择（需要 rootfs.tar.zst，约 808MB）"
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_PICK_ROOTFS && resultCode == RESULT_OK && data?.data != null) {
+            val uri = data.data!!
+            try {
+                contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (_: Exception) {}
+            ConfigStore.saveRootfsUri(this, uri.toString())
+            ConfigStore.saveRootfsPath(this, uri.toString())
+            android.widget.Toast.makeText(this, "已选择：${uri.lastPathSegment}", android.widget.Toast.LENGTH_SHORT).show()
+
+            // 刷新界面
+            currentTab = -1
+            showPage(2)
+        }
+    }
+
+    private fun showProgress(visible: Boolean) {
+        val lp = content.findViewById<android.widget.LinearLayout>(R.id.layoutProgress)
+        lp?.visibility = if (visible) View.VISIBLE else View.GONE
+    }
+
+    private var polling = false
+    private fun startProgressPolling(root: View) {
+        if (polling) return
+        polling = true
+        val pb = root.findViewById<android.widget.ProgressBar>(R.id.pbProgress)
+        val tvText = root.findViewById<android.widget.TextView>(R.id.tvProgressText)
+        val lp = root.findViewById<android.widget.LinearLayout>(R.id.layoutProgress)
+
+        Thread {
+            while (polling && !isFinishing) {
+                val pct = BotService.progressPct
+                val msg = BotService.progressMsg
+                runOnUiThread {
+                    if (pct >= 0) {
+                        lp?.visibility = View.VISIBLE
+                        pb?.progress = pct
+                        tvText?.text = msg
+                    }
+                }
+                Thread.sleep(800)
+            }
+        }.start()
+    }
+
+    override fun onDestroy() {
+        polling = false
+        super.onDestroy()
     }
 
     private fun bindPlugin(root: View) {
