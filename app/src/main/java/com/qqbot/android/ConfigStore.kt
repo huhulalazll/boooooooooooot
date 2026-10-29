@@ -22,6 +22,15 @@ object ConfigStore {
     }
     fun saveTemp(c: Context, v: Float) = f(c, "temp.txt").writeText(v.toString())
 
+    fun loadRootfsUri(c: Context): String =
+        f(c, "rootfs_uri.txt").takeIf { it.exists() }?.readText() ?: ""
+    fun saveRootfsUri(c: Context, v: String) = f(c, "rootfs_uri.txt").writeText(v)
+
+    fun loadRootfsPath(c: Context): String =
+        f(c, "rootfs_path.txt").takeIf { it.exists() }?.readText() ?: ""
+    fun saveRootfsPath(c: Context, v: String) = f(c, "rootfs_path.txt").writeText(v)
+
+
     fun loadFlag(c: Context, name: String): Boolean =
         f(c, "flag_$name.txt").takeIf { it.exists() }?.readText()?.trim() == "1"
 
