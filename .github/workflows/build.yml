@@ -17,29 +17,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Download rootfs (808MB)
-        run: |
-          mkdir -p app/src/main/assets
-          curl -L --retry 5 --retry-delay 10 --retry-all-errors \
-            -o app/src/main/assets/rootfs.tar.zst \
-            "https://github.com/huhulalazll/boooooooooooot/releases/download/v1.0.0-rootfs/rootfs.tar.zst"
-          ls -lh app/src/main/assets/
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --no-daemon
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: qqbot-debug-apk
+          name: qqbot-apk-small
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
 
       - name: Show APK size
         if: always()
-        run: ls -lh app/build/outputs/apk/debug/ 2>/dev/null || echo "未产出 APK"
+        run: ls -lh app/build/outputs/apk/debug/
