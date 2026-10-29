@@ -119,7 +119,12 @@ class BotService : Service() {
 
             // 5. 启动 NapCat
             updateNoti("启动 NapCat…")
-            launchProot("cd /root/napcat_env && bash launcher.sh -q \$(cat /root/mybot/qq.txt 2>/dev/null || echo '')", "napcat")
+            val qqNum = ConfigStore.loadQq(this).trim()
+            val launchCmd = if (qqNum.isNotBlank())
+                "cd /root/napcat_env && bash launcher.sh -q $qqNum"
+            else
+                "cd /root/napcat_env && bash launcher.sh"
+            launchProot(launchCmd, "napcat")
 
             // 等待端口就绪
             waitPort(3000, 90000)
@@ -395,7 +400,7 @@ class BotService : Service() {
             "PROOT_TMP_DIR=$tmp",
             "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
             "LANG=C.UTF-8",
-            "/bin/bash", "-c", cmdInside
+            "/bin/bash", "-c", "'" + cmdInside.replace("'", "'\''") + "'"
         )
 
         dumpDiagnostics(tag, proot, loader, rootfs, tmp, shm)
