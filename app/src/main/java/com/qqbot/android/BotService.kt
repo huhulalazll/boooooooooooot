@@ -329,14 +329,16 @@ class BotService : Service() {
     }
 
     private fun launchProot(cmdInside: String, tag: String): Process? {
-        val bin = FileHelper.binDir(this)
-        val proot = File(bin, "proot").absolutePath
+        val proot = FileHelper.prootPath(this)
+        val loader = FileHelper.prootLoaderPath(this)
         val rootfs = FileHelper.rootfsDir(this).absolutePath
         val shm = FileHelper.shmDir(this).absolutePath
         val tmp = FileHelper.tmpDir(this).absolutePath
 
         val args = listOf(
-            proot, "-0", "-r", rootfs,
+            proot, "-0",
+            "-L", loader,
+            "-r", rootfs,
             "-b", "/dev", "-b", "/proc", "-b", "/sys",
             "-b", "$shm:/dev/shm",
             "-w", "/root",
