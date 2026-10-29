@@ -8,3 +8,7 @@
 /captures
 .externalNativeBuild
 .cxx
+
+# rootfs 不进仓库（808MB），由 Actions 从 Release 下载
+app/src/main/assets/rootfs.tar.gz
+app/src/main/assets/rootfs.tar.zst

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="设置" android:textSize="20sp" android:textStyle="bold" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="模型参数" android:textSize="14sp" android:layout_marginTop="16dp" />
+
+        <TextView android:id="@+id/tvTempLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Temperature: 1.1" android:textSize="13sp" android:layout_marginTop="8dp" />
+        <SeekBar android:id="@+id/sbTemp" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="20" android:progress="11" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="触发方式" android:textSize="14sp" android:layout_marginTop="16dp" />
+        <RadioGroup android:id="@+id/rgTrigger" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp">
+            <RadioButton android:id="@+id/rbPrivate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="私聊全回复，群聊仅 @ 时回复" android:checked="true" />
+            <RadioButton android:id="@+id/rbAll" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="私聊和群聊都回复" />
+        </RadioGroup>
+
+        <Button android:id="@+id/btnLog" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="查看运行日志" android:layout_marginTop="16dp" />
+
+        <Button android:id="@+id/btnClearMemory" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="清除所有记忆" android:layout_marginTop="8dp" />
+
+        <Button android:id="@+id/btnClearSticker" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="清空表情图库" android:layout_marginTop="8dp" />
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="⚠️ 风控提示\n本工具会让 QQ 账号被腾讯风控系统标记。强烈建议使用小号运行，不要用主号。" android:textSize="12sp" android:textColor="#D32F2F" android:layout_marginTop="24dp" />
+
+        <TextView android:id="@+id/tvVersion" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="版本 1.0.0" android:textSize="12sp" android:layout_marginTop="24dp" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="功能开关" android:textSize="20sp" android:textStyle="bold" />
+
+        <!-- 表情包 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="#F5F5F5" android:padding="12dp" android:layout_marginTop="16dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="🖼️ 表情包" android:textSize="16sp" android:textStyle="bold" />
+                <Switch android:id="@+id/swSticker" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="自动收集群聊/私聊里的图片，AI 根据情绪自动发送" android:textSize="12sp" android:layout_marginTop="4dp" />
+            <TextView android:id="@+id/tvStickerStat" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="图库：0 张" android:textSize="12sp" android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <!-- TTS -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="#F5F5F5" android:padding="12dp" android:layout_marginTop="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="🔊 语音合成" android:textSize="16sp" android:textStyle="bold" />
+                <Switch android:id="@+id/swTts" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="把回复转成语音发送，更像真人聊天" android:textSize="12sp" android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <!-- 点歌 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="#F5F5F5" android:padding="12dp" android:layout_marginTop="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="🎵 点歌转语音" android:textSize="16sp" android:textStyle="bold" />
+                <Switch android:id="@+id/swMusic" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="用户点歌，机器人搜索并发送歌曲语音" android:textSize="12sp" android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <!-- 记忆 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="#F5F5F5" android:padding="12dp" android:layout_marginTop="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="📝 记忆总结" android:textSize="16sp" android:textStyle="bold" />
+                <Switch android:id="@+id/swMemory" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="自动总结对话历史，保持长期记忆（达到 40K token 触发）" android:textSize="12sp" android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <!-- 深度角色扮演 -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="#FFF3E0" android:padding="12dp" android:layout_marginTop="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="🔓 深度角色扮演" android:textSize="16sp" android:textStyle="bold" />
+                <Switch android:id="@+id/swBreaklimit" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="增强角色扮演的沉浸感，让 AI 更贴近人设、更少出戏。\n回复长度：关闭 60 字 / 开启 120 字" android:textSize="12sp" android:layout_marginTop="4dp" />
+
+            <LinearLayout android:id="@+id/layoutCustom" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginTop="8dp" android:visibility="gone">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="自定义破限提示词" android:textSize="14sp" />
+                    <Switch android:id="@+id/swCustom" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+                <EditText android:id="@+id/etCustom" android:layout_width="match_parent" android:layout_height="180dp" android:gravity="top|start" android:inputType="textMultiLine" android:background="#FFFFFF" android:padding="8dp" android:layout_marginTop="8dp" android:hint="留空则使用内置破限提示词" />
+                <Button android:id="@+id/btnSaveCustom" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="保存自定义" android:layout_marginTop="8dp" />
+            </LinearLayout>
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="⚠️ 使用须知\n· 仅供个人娱乐使用\n· 请勿用于违法或侵害他人\n· 生成内容由使用者自行承担\n· 建议使用小号运行\n· 未成年人请勿开启" android:textSize="11sp" android:textColor="#D32F2F" android:layout_marginTop="8dp" />
+
+            <CheckBox android:id="@+id/cbAgree" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="我已满 18 岁并同意以上条款" android:textSize="12sp" android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

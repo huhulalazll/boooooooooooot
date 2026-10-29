@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🤖 QQBot"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="● 未启动"
+            android:textSize="16sp"
+            android:layout_marginTop="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#F5F5F5"
+            android:padding="16dp"
+            android:layout_marginTop="16dp">
+
+            <TextView android:id="@+id/tvNapcat" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="NapCat： 未运行" android:textSize="14sp" />
+            <TextView android:id="@+id/tvQQ" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="QQ 登录： 未知" android:textSize="14sp" android:layout_marginTop="8dp" />
+            <TextView android:id="@+id/tvBot" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Bot： 未连接" android:textSize="14sp" android:layout_marginTop="8dp" />
+            <TextView android:id="@+id/tvMem" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="内存： —" android:textSize="14sp" android:layout_marginTop="8dp" />
+            <TextView android:id="@+id/tvUptime" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="运行时长： —" android:textSize="14sp" android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvPersonaInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="当前人格： —"
+            android:textSize="14sp"
+            android:layout_marginTop="16dp" />
+
+        <Button
+            android:id="@+id/btnRefresh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="刷新状态"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+</ScrollView>
