@@ -153,8 +153,8 @@ class BotService : Service() {
                 return false
             }
 
-            val totalSize = try {
-                contentResolver.openFileDescriptor(uri, "r")?.use { it.statSize }
+            val totalSize: Long = try {
+                contentResolver.openFileDescriptor(uri, "r")?.use { it.statSize } ?: -1L
             } catch (_: Exception) { -1L }
 
             setProgress(1, "正在解压系统文件…")
