@@ -400,24 +400,34 @@ class BotService : Service() {
 
         dumpDiagnostics(tag, proot, loader, rootfs, tmp, shm)
 
-        // 写启动脚本（引号处理简化：直接拼接，命令内部不含空格参数）
+        // 生成脚本：用 StringBuilder 逐行拼接，零转义风险
         val script = File(filesDir, "run_$tag.sh")
-        val cmdLine = args.joinToString(" ")
-        script.writeText(
-            "#!/system/bin/sh\n" +
-            "export PROOT_TMP_DIR='" + tmp + "'\n" +
-            "export PROOT_LOADER='" + loader + "'\n" +
-            "export HOME='/root'\n" +
-            "exec " + cmdLine + " 2>&1\n"
-        )
+        val sb = StringBuilder()
+        sb.append("#!/system/bin/sh")
+        sb.append('\n')
+        sb.append("export PROOT_TMP_DIR=\"")
+        sb.append(tmp)
+        sb.append("\"")
+        sb.append('\n')
+        sb.append("export PROOT_LOADER=\"")
+        sb.append(loader)
+        sb.append("\"")
+        sb.append('\n')
+        sb.append("export HOME=\"/root\"")
+        sb.append('\n')
+        sb.append("exec ")
+        sb.append(args.joinToString(" "))
+        sb.append(" 2>&1")
+        sb.append('\n')
+
+        script.writeText(sb.toString())
         script.setExecutable(true, false)
 
         log("[$tag] SCRIPT_CONTENT:")
-        log(script.readText().take(500))
+        log(script.readText())
 
         val pb = ProcessBuilder("/system/bin/sh", script.absolutePath)
         pb.directory(filesDir)
-        // 只补充关键变量，不清空
         pb.environment()["PROOT_TMP_DIR"] = tmp
         pb.environment()["PROOT_LOADER"] = loader
         pb.environment()["TMPDIR"] = tmp
