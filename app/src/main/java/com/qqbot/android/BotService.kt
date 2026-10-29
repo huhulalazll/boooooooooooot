@@ -20,6 +20,9 @@ class BotService : Service() {
         const val ACTION_STOP = "stop"
         private const val CH_ID = "qqbot"
         private const val NOTI_ID = 1
+
+        @Volatile var progressPct: Int = -1
+        @Volatile var progressMsg: String = ""
     }
 
     @Volatile private var running = false
@@ -69,9 +72,15 @@ class BotService : Service() {
     }
 
     private fun updateNoti(text: String) {
+        progressMsg = text
         val nm = getSystemService(NotificationManager::class.java)
         nm.notify(NOTI_ID, buildNoti(text))
         log("[STATUS] $text")
+    }
+
+    private fun setProgress(pct: Int, text: String) {
+        progressPct = pct
+        updateNoti(text)
     }
 
     private fun log(s: String) {
@@ -132,34 +141,68 @@ class BotService : Service() {
             val dst = FileHelper.rootfsDir(this)
             dst.mkdirs()
 
-            // assets 里的 rootfs.tar.zst 需要用 zstd 解压
-            // 但 Android 没有 zstd 命令，所以采用：assets 存 gz 版本
-            val assetName = if (assetExists("rootfs.tar.gz")) "rootfs.tar.gz"
-                           else "rootfs.tar.zst"
+            val uriStr = ConfigStore.loadRootfsUri(this)
+            if (uriStr.isBlank()) {
+                setProgress(-1, "未选择 rootfs 文件")
+                return false
+            }
 
-            log("[UNPACK] 使用 $assetName")
+            val uri = android.net.Uri.parse(uriStr)
+            val ins0 = contentResolver.openInputStream(uri) ?: run {
+                setProgress(-1, "无法读取文件")
+                return false
+            }
 
-            if (assetName.endsWith(".gz")) {
-                assets.open(assetName).use { ins ->
-                    GZIPInputStream(ins).use { gz ->
-                        curStream = gz
-                        extractTar(gz, dst)
+            val totalSize = try {
+                contentResolver.openFileDescriptor(uri, "r")?.use { it.statSize }
+            } catch (_: Exception) { -1L }
+
+            setProgress(1, "正在解压系统文件…")
+
+            val counting = object : java.io.FilterInputStream(ins0) {
+                var read = 0L
+                var lastPct = -1
+                override fun read(): Int {
+                    val b = super.read()
+                    if (b >= 0) {
+                        read++
+                        maybeReport()
                     }
+                    return b
                 }
-            } else {
-                // zst：用 zstd-jni 流式解压
-                assets.open(assetName).use { ins ->
-                    com.github.luben.zstd.ZstdInputStream(ins).use { zs ->
-                        java.io.BufferedInputStream(zs, 1 shl 16).use { bz ->
-                            curStream = bz
-                            extractTar(bz, dst)
-                        }
+                override fun read(b: ByteArray, off: Int, len: Int): Int {
+                    val n = super.read(b, off, len)
+                    if (n > 0) {
+                        read += n
+                        maybeReport()
+                    }
+                    return n
+                }
+                fun maybeReport() {
+                    if (totalSize <= 0) return
+                    val pct = ((read * 100) / totalSize).toInt()
+                    if (pct != lastPct && pct % 2 == 0) {
+                        lastPct = pct
+                        val mb = read / 1024 / 1024
+                        val totMb = totalSize / 1024 / 1024
+                        setProgress(pct, "解压中 $pct% ($mb/$totMb MB)")
                     }
                 }
             }
-            return FileHelper.rootfsReady(this)
+
+            val zs = com.github.luben.zstd.ZstdInputStream(counting)
+            val bz = java.io.BufferedInputStream(zs, 1 shl 16)
+            curStream = bz
+            extractTar(bz, dst)
+            bz.close()
+
+            setProgress(100, "解压完成")
+            val ok = FileHelper.rootfsReady(this)
+            if (!ok) setProgress(-1, "解压后验证失败")
+            ok
         } catch (e: Exception) {
-            log("[UNPACK_ERR] ${e.message}")
+            log("[UNPACK_ERR] ${e.stackTraceToString()}")
+            setProgress(-1, "解压失败: ${e.message}")
             false
         }
     }
