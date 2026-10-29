@@ -259,10 +259,16 @@ class BotService : Service() {
                 }
                 '5' -> { out.mkdirs(); skipData(size) }
                 '2' -> {
+                    // 符号链接：用 os.symlink（android.system.Os）
                     out.parentFile?.mkdirs()
                     val target = str(157, 100)
-                    try { File.createTempFile("lnk", "", out.parentFile).delete() } catch (_: Exception) {}
-                    Runtime.getRuntime().exec(arrayOf("ln", "-sf", target, out.absolutePath)).waitFor()
+                    try {
+                        if (out.exists()) out.delete()
+                        android.system.Os.symlink(target, out.absolutePath)
+                    } catch (e: Exception) {
+                        // 失败则创建普通文件占位，保证后续数据流不错位
+                        try { out.writeText(target) } catch (_: Exception) {}
+                    }
                     skipData(size)
                 }
                 '0', '\u0000', '7' -> {
