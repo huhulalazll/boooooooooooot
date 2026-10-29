@@ -265,17 +265,35 @@ class BotService : Service() {
                     skipData(size)
                 }
                 '0', '\u0000', '7' -> {
-                    out.parentFile?.mkdirs()
-                    FileOutputStream(out).use { fos ->
-                        var left = size
-                        while (left > 0) {
-                            val n = ins.read(buf, 0, minOf(512L, left).toInt())
-                            if (n <= 0) break
-                            fos.write(buf, 0, n)
-                            left -= n
+                    // 先判断目标是否是已存在的目录
+                    if (out.exists() && out.isDirectory) {
+                        skipData(size)
+                    } else if (name.endsWith("/")) {
+                        out.mkdirs()
+                        skipData(size)
+                    } else {
+                        out.parentFile?.mkdirs()
+                        try {
+                            FileOutputStream(out).use { fos ->
+                                var left = size
+                                while (left > 0) {
+                                    val n = ins.read(buf, 0, minOf(512L, left).toInt())
+                                    if (n <= 0) break
+                                    fos.write(buf, 0, n)
+                                    left -= n
+                                }
+                            }
+                        } catch (e: Exception) {
+                            // 写入失败，仍需跳过剩余数据
+                            log("[TAR] skip $name: ${e.message}")
+                            var left = size
+                            while (left > 0) {
+                                val n = ins.read(buf, 0, minOf(512L, left).toInt())
+                                if (n <= 0) break
+                                left -= n
+                            }
                         }
                     }
-                    out.setLastModified(out.lastModified())
                 }
                 else -> skipData(size)
             }
