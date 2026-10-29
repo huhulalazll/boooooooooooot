@@ -380,12 +380,27 @@ class BotService : Service() {
             "/bin/bash", "-c", cmdInside
         )
 
-        log("[$tag] CMD: $proot -0 -r $rootfs")
-        log("[$tag] PROOT_LOADER=$loader")
+        // 写启动脚本，用 /system/bin/sh 执行（绕过 ProcessBuilder 环境差异）
+        val script = File(filesDir, "run_$tag.sh")
+        val envQuoted = args.joinToString(" ") { a ->
+            if (a.contains(" ") || a.contains("$")) ""${a.replace(""", "\"")}"" else a
+        }
+        script.writeText("""#!/system/bin/sh
+export PROOT_TMP_DIR="$tmp"
+export PROOT_LOADER="$loader"
+export HOME="/root"
+exec $envQuoted 2>&1
+""")
+        script.setExecutable(true, false)
 
-        val pb = ProcessBuilder(args)
-        pb.environment()["PROOT_TMP_DIR"] = tmp
-        pb.environment()["PROOT_LOADER"] = loader
+        log("[$tag] SCRIPT=$script")
+
+        val pb = ProcessBuilder("/system/bin/sh", script.absolutePath)
+        pb.directory(filesDir)
+        pb.environment().clear()
+        pb.environment()["PATH"] = "/system/bin:/system/xbin:/vendor/bin"
+        pb.environment()["HOME"] = filesDir.absolutePath
+        pb.environment()["TMPDIR"] = tmp
         pb.redirectErrorStream(true)
 
         val p = try {
