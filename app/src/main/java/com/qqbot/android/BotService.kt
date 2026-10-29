@@ -345,7 +345,6 @@ class BotService : Service() {
 
         val args = listOf(
             proot, "-0",
-            "-L", loader,
             "-r", rootfs,
             "-b", "/dev", "-b", "/proc", "-b", "/sys",
             "-b", "$shm:/dev/shm",
@@ -360,6 +359,7 @@ class BotService : Service() {
 
         val pb = ProcessBuilder(args)
         pb.environment()["PROOT_TMP_DIR"] = tmp
+        pb.environment()["PROOT_LOADER"] = loader
         pb.environment()["HOME"] = filesDir.absolutePath
 
         val p = pb.start()
