@@ -380,12 +380,20 @@ class BotService : Service() {
             "/bin/bash", "-c", cmdInside
         )
 
+        log("[$tag] CMD: $proot -0 -r $rootfs")
+        log("[$tag] PROOT_LOADER=$loader")
+
         val pb = ProcessBuilder(args)
         pb.environment()["PROOT_TMP_DIR"] = tmp
         pb.environment()["PROOT_LOADER"] = loader
-        pb.environment()["HOME"] = filesDir.absolutePath
+        pb.redirectErrorStream(true)
 
-        val p = pb.start()
+        val p = try {
+            pb.start()
+        } catch (e: Exception) {
+            log("[$tag] START_FAIL: ${e.message}")
+            return null
+        }
         if (tag == "napcat") prootProc = p
 
         Thread {
@@ -393,7 +401,12 @@ class BotService : Service() {
                 BufferedReader(InputStreamReader(p.inputStream)).useLines { lines ->
                     lines.forEach { log("[$tag] $it") }
                 }
-            } catch (_: Exception) {}
+                val code = p.waitFor()
+                log("[$tag] EXIT_CODE=$code")
+                if (code != 0) updateNoti("$tag 退出码 $code")
+            } catch (e: Exception) {
+                log("[$tag] READ_ERR: ${e.message}")
+            }
         }.start()
 
         return p
