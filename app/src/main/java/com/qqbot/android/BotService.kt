@@ -239,6 +239,7 @@ class BotService : Service() {
 
         while (readBlock()) {
             val name0 = str(0, 100)
+            val mode = octal(100, 8)
             val size = octal(124, 12)
             val type = buf[156].toInt().toChar()
             val prefix = str(345, 155)
@@ -293,6 +294,13 @@ class BotService : Service() {
                                 left -= n
                             }
                         }
+                        // 恢复文件权限
+                        try {
+                            val m = mode.toInt()
+                            if (m and 0b001001001 != 0) out.setExecutable(true, false)
+                            if (m and 0b100100100 != 0) out.setReadable(true, false)
+                            if (m and 0b010010010 != 0) out.setWritable(true, false)
+                        } catch (_: Exception) {}
                     }
                 }
                 else -> skipData(size)
