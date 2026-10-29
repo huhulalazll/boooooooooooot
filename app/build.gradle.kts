@@ -36,6 +36,19 @@ android {
     androidResources {
         noCompress += listOf("zst", "gz", "tar")
     }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+            keepDebugSymbols += "**/libproot*.so"
+        }
+    }
+
+    sourceSets {
+        getByName("main") {
+            jniLibs.srcDirs("src/main/jniLibs")
+        }
+    }
 }
 
 dependencies {
