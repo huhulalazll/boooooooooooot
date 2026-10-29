@@ -15,23 +15,21 @@ object FileHelper {
     fun rootfsReady(c: Context): Boolean =
         File(rootfsDir(c), "opt/QQ/qq").exists()
 
-    /** 从 assets 复制 proot 相关文件到私有目录 */
+    /** proot 从 nativeLibraryDir 取（Android 只允许这里执行二进制） */
+    fun prootPath(c: Context): String = File(c.applicationInfo.nativeLibraryDir, "libproot.so").absolutePath
+
+    fun prootLoaderPath(c: Context): String = File(c.applicationInfo.nativeLibraryDir, "libproot_loader.so").absolutePath
+
+    /** 把 loader 复制到指定目录（proot 需要 loader 在 -L 指定位置） */
     fun prepareProot(c: Context): Boolean {
         return try {
-            val dst = binDir(c)
-            dst.mkdirs()
-            copyAsset(c, "proot/proot", File(dst, "proot"))
-            copyAsset(c, "proot/proot-userland", File(dst, "proot-userland"))
-            val le = File(dst, "libexec/proot")
-            le.mkdirs()
-            copyAsset(c, "proot/libexec/proot/loader", File(le, "loader"))
-            copyAsset(c, "proot/libexec/proot/loader32", File(le, "loader32"))
-
-            listOf(File(dst, "proot"), File(dst, "proot-userland"),
-                File(le, "loader"), File(le, "loader32")).forEach {
-                it.setExecutable(true, false)
-                it.setReadable(true, false)
-            }
+            val loaderSrc = File(prootLoaderPath(c))
+            if (!loaderSrc.exists()) return false
+            // loader 需要在 proot 可执行位置附近，复制到 tmp 目录
+            val dst = File(c.filesDir, "proot_loader")
+            dst.parentFile?.mkdirs()
+            loaderSrc.copyTo(dst, overwrite = true)
+            dst.setExecutable(true, false)
             true
         } catch (e: Exception) {
             false
