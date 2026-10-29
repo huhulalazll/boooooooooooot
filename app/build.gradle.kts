@@ -31,6 +31,11 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    // 不压缩 zst，避免解压失败
+    androidResources {
+        noCompress += listOf("zst", "gz", "tar")
+    }
 }
 
 dependencies {
